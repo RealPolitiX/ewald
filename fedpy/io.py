@@ -47,6 +47,28 @@ def readcif(filename, **kwds):
 
     return atomLabels, coords, crystVec
 
+def writecif(atoms, coords, filename, text=''):
+    """
+    Write cif file
+    
+    :Parameters:
+        atoms : list
+            Atom list
+        coords : numpy array
+            Atomic coordinates
+        text : str
+            Text to be added to the beginning of the cif
+        filename : str
+            Filename string
+    """
+    
+    f = open(filename+'.cif', 'w')
+    f.write(text)
+    
+    for atom, coord in zip(atoms, coords):
+        f.write("{}   {} {} {}\n".format(atom, coord[0], coord[1], coord[2]))
+    
+    f.close()
 
 def writexyz(atoms, coords, iteraxis, filename):
     """
@@ -58,9 +80,9 @@ def writexyz(atoms, coords, iteraxis, filename):
         coords : numpy array
             Atomic coordinates
         iteraxis : int
-            axis to iterate
+            Axis to iterate
         filename : str
-            filename
+            Filename string
     """
     
     f = open(filename+'.xyz', 'w')

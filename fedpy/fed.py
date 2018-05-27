@@ -5,70 +5,15 @@ import numpy as np
 import pandas as pd
 pi = np.pi
 
-def voltage2wavelength(voltage):
-    """Convert acceleration voltage of the electron
-    to its de Broglie wavelength
-    """
-    
-    h = 6.626069E-34
-    e = 1.602176E-19
-    me = 9.10938E-31
-    c = 2.99792458E8
-    term1 = h/np.sqrt(2*me*e*voltage)
-    term2 = 1.0/np.sqrt(1 + (e*voltage/(2*me*c*c)))
-    eWavelength = term1*term2*1e10 # units of Angstoms
-    return eWavelength
+# =======================================
+# Sections:
+# 1.  Classes
+# 2.  Conversions
+# 3.  Diffraction pattern simulation
+# 4.  Basis decomposition
+# =======================================
 
-def frac2cart(xyzFrac,axes):
-    
-    xyzCart = np.dot(xyzFrac,axes)
-    return xyzCart
-
-def hkl2cart(hkl,axesRecip):
-    
-    xyzCart = np.dot(hkl,axesRecip)
-    return xyzCart
-
-def cart2frac(xyzCart,cellAxes):
-    
-    invAxes = np.linalg.inv(cellAxes)
-    xyzFrac = np.array(np.dot(xyzCart,invAxes),'float64')
-    return xyzFrac
-
-def atomLabels2numbers(labels):
-    
-    nAt = labels.size
-    atomicNumbers = np.zeros(nAt)
-    for atm in range(nAt):
-        if labels[atm] == 'H':
-            atomicNumbers[atm] = 1
-        elif labels[atm] =='C':
-            atomicNumbers[atm] = 6
-        elif labels[atm] == 'N':
-            atomicNumbers[atm] = 7
-        elif labels[atm] == 'I':
-            atomicNumbers[atm] = 53
-        else:
-            print('atom {} not found'.format(atm))
-    return atomicNumbers
-
-# Calculations
-KirkTableMat = np.loadtxt(r'E:\Code-archiv\Python\PyNotebooks\TBAT\Simulation\KirklandTable.mat')
-def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
-
-    L0 = int(3*Z-3)
-    A = np.array([KirkTableMat[L0,0],KirkTableMat[L0,2],KirkTableMat[L0+1,0]]).reshape(1,3)
-    B = np.array([KirkTableMat[L0,1],KirkTableMat[L0,3],KirkTableMat[L0+1,1]]).reshape(3,1)
-    C = np.array([KirkTableMat[L0+1,2],KirkTableMat[L0+2,0],KirkTableMat[L0+2,2]]).reshape(1,3)
-    D = np.array([KirkTableMat[L0+1,3],KirkTableMat[L0+2,1],KirkTableMat[L0+2,3]]).reshape(3,1)
-    q2 = np.tile(modQ**2,(3,1))   
-    E = 1.0/(q2 + B)
-    term1 = np.dot(A, E)
-    term2 = np.dot(C, np.exp(-q2*D))
-    atmF = term1 + term2
-    return atmF
-
-
+# ============== Classes ============== #
 class Detector(object):
     
     # Detector parameters
@@ -154,6 +99,72 @@ class TriclinicCrystal(object):
                 beta = {} deg,\n\
                 gamma = {} deg".format(self.a, self.b, self.c,\
                 self.alpha, self.beta, self.gamma))
+
+
+# ============== Conversions ============== #
+def voltage2wavelength(voltage):
+    """Convert acceleration voltage of the electron
+    to its de Broglie wavelength
+    """
+    
+    h = 6.626069E-34
+    e = 1.602176E-19
+    me = 9.10938E-31
+    c = 2.99792458E8
+    term1 = h/np.sqrt(2*me*e*voltage)
+    term2 = 1.0/np.sqrt(1 + (e*voltage/(2*me*c*c)))
+    eWavelength = term1*term2*1e10 # units of Angstoms
+    return eWavelength
+
+def frac2cart(xyzFrac,axes):
+    
+    xyzCart = np.dot(xyzFrac,axes)
+    return xyzCart
+
+def hkl2cart(hkl,axesRecip):
+    
+    xyzCart = np.dot(hkl,axesRecip)
+    return xyzCart
+
+def cart2frac(xyzCart,cellAxes):
+    
+    invAxes = np.linalg.inv(cellAxes)
+    xyzFrac = np.array(np.dot(xyzCart,invAxes),'float64')
+    return xyzFrac
+
+def atomLabels2numbers(labels):
+    
+    nAt = labels.size
+    atomicNumbers = np.zeros(nAt)
+    for atm in range(nAt):
+        if labels[atm] == 'H':
+            atomicNumbers[atm] = 1
+        elif labels[atm] =='C':
+            atomicNumbers[atm] = 6
+        elif labels[atm] == 'N':
+            atomicNumbers[atm] = 7
+        elif labels[atm] == 'I':
+            atomicNumbers[atm] = 53
+        else:
+            print('atom {} not found'.format(atm))
+    return atomicNumbers
+
+
+# ============== Diffraction pattern simulation ============== #
+KirkTableMat = np.loadtxt(r'E:\Code-archiv\Python\PyNotebooks\TBAT\Simulation\KirklandTable.mat')
+def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
+
+    L0 = int(3*Z-3)
+    A = np.array([KirkTableMat[L0,0],KirkTableMat[L0,2],KirkTableMat[L0+1,0]]).reshape(1,3)
+    B = np.array([KirkTableMat[L0,1],KirkTableMat[L0,3],KirkTableMat[L0+1,1]]).reshape(3,1)
+    C = np.array([KirkTableMat[L0+1,2],KirkTableMat[L0+2,0],KirkTableMat[L0+2,2]]).reshape(1,3)
+    D = np.array([KirkTableMat[L0+1,3],KirkTableMat[L0+2,1],KirkTableMat[L0+2,3]]).reshape(3,1)
+    q2 = np.tile(modQ**2,(3,1))   
+    E = 1.0/(q2 + B)
+    term1 = np.dot(A, E)
+    term2 = np.dot(C, np.exp(-q2*D))
+    atmF = term1 + term2
+    return atmF
 
 def calcStructureFactors(HKL, AtomicF, XYZ, form="complete"):
     """
@@ -298,3 +309,16 @@ def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
     Fhkl = calcStructureFactors(hkl, fAtomic_HKL, fractionals)
     
     return Fhkl
+    
+
+# ============== Basis decomposition ============== #
+def lincompose(coeffs, components, mat_shape=None):
+    """ Linear composition of bases
+    """
+    
+    Smodel = np.dot(coeffs, components)
+    matrecon = Smodel
+    if mat_shape is not None:
+        matrecon = Smodel.reshape(mat_shape)
+    
+    return matrecon

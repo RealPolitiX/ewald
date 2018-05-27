@@ -2,6 +2,7 @@
 
 import re
 import numpy as np
+from math import factorial as fac
 
 def numgrab(string, delim=' '):
     """Find the numerical values in a string
@@ -40,3 +41,11 @@ def arraybin2(arr, rowbin=1, colbin=1):
     arrbinned = arr.reshape(shape).mean(-1).mean(1)
     
     return arrbinned
+    
+def cnr(n, r):
+    """ Calculate the combinatorial coefficient
+    """
+    
+    coef = fac(n) / (fac(r) * fac(n-r))
+    
+    return int(coef)

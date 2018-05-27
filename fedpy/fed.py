@@ -3,17 +3,21 @@
 from __future__ import division
 import numpy as np
 import pandas as pd
+import itertools as it
+import .utils as u
 pi = np.pi
 
-# =======================================
+# ==================================================
 # Sections:
 # 1.  Classes
 # 2.  Conversions
-# 3.  Diffraction pattern simulation
-# 4.  Basis decomposition
-# =======================================
+# 3.  Simulation building blocks
+# 4.  Simulation routines
+# 5.  Basis decomposition
+# ==================================================
 
 # ============== Classes ============== #
+
 class Detector(object):
     
     # Detector parameters
@@ -102,9 +106,10 @@ class TriclinicCrystal(object):
 
 
 # ============== Conversions ============== #
+
 def voltage2wavelength(voltage):
-    """Convert acceleration voltage of the electron
-    to its de Broglie wavelength
+    """C onvert acceleration voltage of the electron
+    to its de Broglie wavelength (in Angstrom)
     """
     
     h = 6.626069E-34
@@ -113,23 +118,27 @@ def voltage2wavelength(voltage):
     c = 2.99792458E8
     term1 = h/np.sqrt(2*me*e*voltage)
     term2 = 1.0/np.sqrt(1 + (e*voltage/(2*me*c*c)))
-    eWavelength = term1*term2*1e10 # units of Angstoms
+    eWavelength = term1*term2*1e10 # unit in Angstrom
+    
     return eWavelength
 
 def frac2cart(xyzFrac,axes):
     
     xyzCart = np.dot(xyzFrac,axes)
+    
     return xyzCart
 
 def hkl2cart(hkl,axesRecip):
     
     xyzCart = np.dot(hkl,axesRecip)
+    
     return xyzCart
 
 def cart2frac(xyzCart,cellAxes):
     
     invAxes = np.linalg.inv(cellAxes)
     xyzFrac = np.array(np.dot(xyzCart,invAxes),'float64')
+    
     return xyzFrac
 
 def atomLabels2numbers(labels):
@@ -147,10 +156,12 @@ def atomLabels2numbers(labels):
             atomicNumbers[atm] = 53
         else:
             print('atom {} not found'.format(atm))
+    
     return atomicNumbers
 
 
-# ============== Diffraction pattern simulation ============== #
+# ============== Simulation building blocks ============== #
+
 KirkTableMat = np.loadtxt(r'E:\Code-archiv\Python\PyNotebooks\TBAT\Simulation\KirklandTable.mat')
 def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
 
@@ -164,6 +175,7 @@ def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
     term1 = np.dot(A, E)
     term2 = np.dot(C, np.exp(-q2*D))
     atmF = term1 + term2
+    
     return atmF
 
 def calcStructureFactors(HKL, AtomicF, XYZ, form="complete"):
@@ -224,6 +236,7 @@ def calcScatteringVectorsIMG(Detect,eBeam,rotation):
     #Transform to reference of crystal
     qVectorIMG = np.einsum('ijk,kl', q, eBeam.axes)
     #qVectorIMG = np.array([[np.dot(q[i,j,:],eBeam.axes) for i in ranY] for j in ranX])
+    
     return qVectorIMG, modQ_IMG
 
 def hkl2fAtomicAllAtoms(atomicNumbers, hklArray, axesReciprocal):
@@ -299,6 +312,7 @@ def removeUnnecessaryHKLs(HKLvals,eBeam,axesReciprocal,cutoff):
         if distFromPlane < cutoff*eBeam.modK:
             HKLminimal.append(HKLvals[indxH])
     HKL2 = np.array(HKLminimal)
+    
     return HKL2
 
 def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
@@ -309,16 +323,68 @@ def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
     Fhkl = calcStructureFactors(hkl, fAtomic_HKL, fractionals)
     
     return Fhkl
-    
+
+
+# ============== Simulation routines ============== #
+
+# def sim_displaced():
+
+#   pass
+
 
 # ============== Basis decomposition ============== #
-def lincompose(coeffs, components, mat_shape=None):
+
+def lincompose(lincoeffs, components, mat_shape=None):
     """ Linear composition of bases
     """
     
-    Smodel = np.dot(coeffs, components)
-    matrecon = Smodel
-    if mat_shape is not None:
-        matrecon = Smodel.reshape(mat_shape)
+    linmodel = np.dot(lincoeffs, components)
+    
+    try:
+        matrecon = linmodel.reshape(mat_shape)
+    except:
+        matrecon = linmodel
     
     return matrecon
+    
+def polycompose(lincoeffs, components, axis=0, order=2, mat_shape=None):
+    """ Polynomial composition of linear bases
+    """
+    
+    nlincoeffs = kron2d(lincoeffs, axis=axis, order=order)
+    nlincomps = kron2d(components, axis=axis, order=order)
+    polymodel = np.dot(nlincoeffs, nlincomps)
+    
+    try:
+        matrecon = polymodel.reshape(mat_shape)
+    except:
+        matrecon = polymodel
+    
+    return matrecon
+    
+def kron2d(mat, axis=0, order=2):
+    """ Calcuate the multinomial feature vectors
+    """
+    
+    if np.ndim(mat) == 1:
+        mat = mat[:, np.newaxis]
+    mat = np.rollaxis(mat, axis)
+    nvec, nfeatlen = mat.shape
+    
+    # List the cross terms
+    crosst = list(it.combinations(range(nvec), 2))
+    # List the diagonal terms
+    cardt = [(i, i) for i in range(nvec)]
+    
+    nterms = u.cnr(order+nvec-1, nvec-1)
+    matkron = np.zeros((nterms, nfeatlen))
+    
+    # Calculate the diagonal terms
+    matkron[:nvec, :] = mat**2
+    # Calculate the cross terms
+    for i, term in enumerate(crosst):
+        matkron[nvec+i, :] = 2*mat[term[0], :]*mat[term[1], :]
+    
+    matkron = np.rollaxis(matkron, axis)
+    
+    return matkron.squeeze()

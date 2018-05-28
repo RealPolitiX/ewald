@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. Main functions and classes (fedpy.fed) &mdash; fedpy 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fedpy 0.1.0 documentation" href="../index.html"/>
+        <link rel="next" title="2. File I/O (fedpy.io)" href="io.html"/>
+        <link rel="prev" title="fedpy documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> fedpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">fedpy library:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Main functions and classes (fedpy.fed)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">2. File I/O (fedpy.io)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">3. Utility functions (fedpy.utils)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vis.html">4. Visualizations (fedpy.vis)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">fedpy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>1. Main functions and classes (fedpy.fed)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/lib/fed.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-fedpy.fed">
+<span id="main-functions-and-classes-fedpy-fed"></span><h1>1. Main functions and classes (fedpy.fed)<a class="headerlink" href="#module-fedpy.fed" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="fedpy.fed.Detector">
+<em class="property">class </em><code class="descclassname">fedpy.fed.</code><code class="descname">Detector</code><span class="sig-paren">(</span><em>imgSizeX</em>, <em>imgSizeY</em>, <em>centreX</em>, <em>centreY</em>, <em>distance</em>, <em>pixelSize</em>, <em>magnification</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#Detector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.Detector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detector parameter container class</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.atomLabels2numbers">
+<code class="descclassname">fedpy.fed.</code><code class="descname">atomLabels2numbers</code><span class="sig-paren">(</span><em>labels</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#atomLabels2numbers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.atomLabels2numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert atomic symbols to atomic number</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.calcStructureFactors">
+<code class="descclassname">fedpy.fed.</code><code class="descname">calcStructureFactors</code><span class="sig-paren">(</span><em>HKL</em>, <em>AtomicF</em>, <em>XYZ</em>, <em>form='complete'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#calcStructureFactors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.calcStructureFactors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the complex-valued structure factor (SF)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>HKL <span class="classifier-delimiter">:</span> <span class="classifier">n x 3 array</span></dt>
+<dd><p class="first last">List of n (h,k,l) index triplets</p>
+</dd>
+<dt>AtomicF <span class="classifier-delimiter">:</span> <span class="classifier">n x m array</span></dt>
+<dd><p class="first last">Atomic structure factor array (m atoms in a unit cell for the n index triplets)</p>
+</dd>
+<dt>XYZ <span class="classifier-delimiter">:</span> <span class="classifier">m x 3 array</span></dt>
+<dd><p class="first last">Real-space fractional coordinates of all atoms (within unit cell)</p>
+</dd>
+<dt>form <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">Numerical form of the structure factor</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return:</th><td class="field-body"><dl class="first last docutils">
+<dt>F <span class="classifier-delimiter">:</span> <span class="classifier">1D array (n elements)</span></dt>
+<dd><p class="first last">Complex-valued structure factor for all index triplets</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.cart2frac">
+<code class="descclassname">fedpy.fed.</code><code class="descname">cart2frac</code><span class="sig-paren">(</span><em>xyzCart</em>, <em>cellAxes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#cart2frac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.cart2frac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversion from Cartesian to fractional coordinates</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.frac2cart">
+<code class="descclassname">fedpy.fed.</code><code class="descname">frac2cart</code><span class="sig-paren">(</span><em>xyzFrac</em>, <em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#frac2cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.frac2cart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversion from fractional to Cartesian coordinates</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.hkl2fAtomicAllAtoms">
+<code class="descclassname">fedpy.fed.</code><code class="descname">hkl2fAtomicAllAtoms</code><span class="sig-paren">(</span><em>atomicNumbers</em>, <em>hklArray</em>, <em>axesReciprocal</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#hkl2fAtomicAllAtoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.hkl2fAtomicAllAtoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the atomic structure factor for all (h,k,l)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt>atomicNumbers <span class="classifier-delimiter">:</span> <span class="classifier">1D array</span></dt>
+<dd><p class="first last">Atomic numbers of the</p>
+</dd>
+<dt>hklArray <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd><p class="first last">Array of (h,k,l) for the diffraction peaks</p>
+</dd>
+<dt>axesReciprocal <span class="classifier-delimiter">:</span> <span class="classifier">3x3 array</span></dt>
+<dd><p class="first last">Reciprocal space vectors of the unit cell</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return:</th><td class="field-body"><dl class="first last docutils">
+<dt>fAtomic <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd><p class="first last">Matrix of atomic structure factors</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.kron2d">
+<code class="descclassname">fedpy.fed.</code><code class="descname">kron2d</code><span class="sig-paren">(</span><em>mat</em>, <em>axis=0</em>, <em>order=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#kron2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.kron2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the multinomial feature vectors</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.lincompose">
+<code class="descclassname">fedpy.fed.</code><code class="descname">lincompose</code><span class="sig-paren">(</span><em>lincoeffs</em>, <em>components</em>, <em>mat_shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#lincompose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.lincompose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear composition of bases</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.polycompose">
+<code class="descclassname">fedpy.fed.</code><code class="descname">polycompose</code><span class="sig-paren">(</span><em>lincoeffs</em>, <em>components</em>, <em>axis=0</em>, <em>order=2</em>, <em>mat_shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#polycompose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.polycompose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Polynomial composition of linear bases</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fedpy.fed.voltage2wavelength">
+<code class="descclassname">fedpy.fed.</code><code class="descname">voltage2wavelength</code><span class="sig-paren">(</span><em>voltage</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fedpy/fed.html#voltage2wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fedpy.fed.voltage2wavelength" title="Permalink to this definition">¶</a></dt>
+<dd><p>C onvert acceleration voltage of the electron
+to its de Broglie wavelength (in Angstrom)</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="io.html" class="btn btn-neutral float-right" title="2. File I/O (fedpy.io)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="fedpy documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, R. Patrick Xian, Stuart Hayes.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

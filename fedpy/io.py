@@ -10,13 +10,13 @@ def readcif(filename, **kwds):
     Read a cif and parse structural parameters
     
     :Parameters:
-        filename : string
+        filename : str
             filename address
     
     :Returns:
-        atomLabels : string list
+        atomLabels : str list
             atomic labels
-        coords : ndarray
+        coords : numpy array
             atomic coordinates
         crystVec : list of numericals
             unit cell parameters in a cif file    
@@ -59,11 +59,14 @@ def readmovie(addr, ftype='xyz', frameformat='aio'):
         ftype : str | 'xyz'
             File type
         frameformat : str | 'aio'
-            Movie frame format specification
-            ===== ============ =====================================
-            'aio'  all-in-one   all frames in one, indexed 'frames'
-            'sep'  separated    each frame is indexed with a number
-            ===== ============ =====================================
+            Movie frame return format specification.
+            
+            ======  ============  =====================================
+            string   full name                  meaning
+            ======  ============  =====================================
+            'aio'    all-in-one    all frames in one, indexed 'frames'
+            'sep'    separated     each frame is indexed with a number
+            ======  ============  =====================================
         
     :Return:
         out : dict
@@ -131,7 +134,7 @@ def writecif(atoms, coords, filename, text=''):
 
 def writexyz(atoms, coords, iteraxis, filename):
     """
-    Write to a xyz file
+    Write to an xyz file
     
     :Parameters:
         atoms : list

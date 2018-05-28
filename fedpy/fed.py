@@ -19,10 +19,11 @@ pi = np.pi
 # ============== Classes ============== #
 
 class Detector(object):
-    
-    # Detector parameters
+    """ Detector parameter container class
+    """
+
     def __init__(self, imgSizeX, imgSizeY, centreX, centreY, distance, pixelSize, magnification):
-        
+
         self.imgSizeX = imgSizeX
         self.imgSizeY = imgSizeY
         self.centreX = centreX
@@ -30,6 +31,17 @@ class Detector(object):
         self.dist = distance
         self.pixelSize = pixelSize
         self.magnification = magnification
+
+    def __repr__(self):
+
+        return("Detector parameters:\n\
+                X, Y = {}, {}\n\
+                Xcenter, Ycenter = {}, {}\n\
+                Detector distance = {},\n\
+                Pixel size = {},\n\
+                Magnification = {}".format(self.imgSizeX, self.imgSizeY, \
+                self.centreX, self.centreY, self.dist, self.pixelSize, \
+                self.magnification))
 
         
 class ElectronBeam(object):
@@ -123,6 +135,9 @@ def voltage2wavelength(voltage):
     return eWavelength
 
 def frac2cart(xyzFrac,axes):
+    """
+    Conversion from fractional to Cartesian coordinates
+    """
     
     xyzCart = np.dot(xyzFrac,axes)
     
@@ -135,6 +150,9 @@ def hkl2cart(hkl,axesRecip):
     return xyzCart
 
 def cart2frac(xyzCart,cellAxes):
+    """
+    Conversion from Cartesian to fractional coordinates
+    """
     
     invAxes = np.linalg.inv(cellAxes)
     xyzFrac = np.array(np.dot(xyzCart,invAxes),'float64')
@@ -142,9 +160,13 @@ def cart2frac(xyzCart,cellAxes):
     return xyzFrac
 
 def atomLabels2numbers(labels):
+    """
+    Convert atomic symbols to atomic number
+    """
     
     nAt = labels.size
     atomicNumbers = np.zeros(nAt)
+    
     for atm in range(nAt):
         if labels[atm] == 'H':
             atomicNumbers[atm] = 1
@@ -216,9 +238,11 @@ def calcScatteringVectorsIMG(Detect,eBeam,rotation):
     nY = Detect.imgSizeY
     ranX = np.arange(nX, dtype='float64')
     ranY = np.arange(nY, dtype='float64')
+    
     qVectorIMG = np.zeros([nY,nX,3], dtype='float64')
     q = np.zeros([nY,nX,3], dtype='float64')
     modQ_IMG = np.zeros([nY,nX], dtype='float64')
+    
     X, Y = np.meshgrid(ranX, ranY)
     dx = Detect.pixelSize*(X-Detect.centreX)/Detect.magnification
     dy = Detect.pixelSize*(Y-Detect.centreY)/Detect.magnification
@@ -229,6 +253,7 @@ def calcScatteringVectorsIMG(Detect,eBeam,rotation):
     phi = np.where(dx==0, np.sign(dy)*np.pi/2, np.arctan(dy/dx)+np.pi*(1-np.sign(dx))/2) + rotation
     modK = 1.0/eBeam.wavelength
     modQ_IMG = 2*modK*np.sin(0.5*theta.T)
+    
     qR = 2*modQ_IMG*np.cos(0.5*theta) # projection of q on detector
     q[:,:,0] = qR*np.cos(phi) # x-component of q
     q[:,:,1] = qR*np.sin(phi) # y-component of q
@@ -363,7 +388,7 @@ def polycompose(lincoeffs, components, axis=0, order=2, mat_shape=None):
     return matrecon
     
 def kron2d(mat, axis=0, order=2):
-    """ Calcuate the multinomial feature vectors
+    """ Calculate the multinomial feature vectors
     """
     
     if np.ndim(mat) == 1:

@@ -7,6 +7,8 @@ import pandas as pd
 # File I/O
 def readcif(filename, **kwds):
     """
+    Read a cif and parse structural parameters
+    
     :Parameters:
         filename : string
             filename address
@@ -46,10 +48,67 @@ def readcif(filename, **kwds):
     coords = np.array(cifdata.values[:,1:4]).astype('float64')
 
     return atomLabels, coords, crystVec
-
+    
+def readmovie(addr, ftype='xyz', frameformat='aio'):
+    """
+    Read molecular movie into a dictionary
+    
+    :Parameters:
+        addr : str
+            File address
+        ftype : str | 'xyz'
+            File type
+        frameformat : str | 'aio'
+            Movie frame format specification
+            ===== ============ =====================================
+            'aio'  all-in-one   all frames in one, indexed 'frames'
+            'sep'  separated    each frame is indexed with a number
+            ===== ============ =====================================
+        
+    :Return:
+        out : dict
+            Output dictionary of atomic symbols and coordinates
+    """
+    
+    f = open(addr, 'r')
+    allcoords = []
+    
+    if ftype == 'xyz':
+        
+        while True:
+            
+            try:
+                natoms = int(f.readline())
+                f.readline()
+                atoms, coords = [], []
+                
+                for x in range(natoms):
+                    line = f.readline().split()
+                    atoms.append(line[0])
+                    coords.append(line[1:])
+                
+                allcoords.append(coords)
+                
+            except:
+                
+                break
+    
+    # Assemble the read coordinates into a dictionary
+    nframes = len(allcoords)
+    out = {}
+    out['atoms'] = atoms
+    
+    if frameformat == 'aio':
+        out['frames'] = np.asarray(allcoords, dtype='float64')
+    elif frameformat == 'sep':
+        for i in range(nframes):
+            out[str(i)] = np.asarray(allcoords[i], dtype='float64')
+            
+    return out
+    
 def writecif(atoms, coords, filename, text=''):
     """
-    Write cif file
+    Write to a cif
     
     :Parameters:
         atoms : list
@@ -72,7 +131,7 @@ def writecif(atoms, coords, filename, text=''):
 
 def writexyz(atoms, coords, iteraxis, filename):
     """
-    Write xyz file from coordinates
+    Write to a xyz file
     
     :Parameters:
         atoms : list

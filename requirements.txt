@@ -1,4 +1,7 @@
 # Dev/Deployment
+numpy
+pandas
+matplotlib
 sphinx
 sphinx_rtd_theme
 nose

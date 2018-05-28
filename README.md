@@ -9,5 +9,9 @@ Use the terminal
 pip install git+https://github.com/RealPolitiX/fedpy.git
 ```
 
+
+
 ## How to use
-Documentation coming soon...
+
+The latest version of the documentation can be found [here](https://fedpy.readthedocs.io/en/latest/).
+

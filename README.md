@@ -6,7 +6,7 @@
 ## How to install
 Use the terminal
 ```bash
-pip install https://github.com/RealPolitiX/fedpy.git
+pip install git+https://github.com/RealPolitiX/fedpy.git
 ```
 
 ## How to use

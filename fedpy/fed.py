@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+from . import utils as u
 import numpy as np
 import pandas as pd
 import itertools as it
-import .utils as u
 pi = np.pi
 
 # ==================================================

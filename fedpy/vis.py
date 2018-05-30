@@ -2,6 +2,34 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def linecomparisonplot(*lines, **kwargs):
+    """
+    Comparison plot of a few lines
+    """
+    
+    figsize = kwargs.pop('figsize', (6, 4))
+    nlines = len(lines)
+    x = kwargs.pop('x', range(len(lines[0])))
+    xlabel = kwargs.pop('xlabel', '')
+    ylabel = kwargs.pop('ylabel', '')
+    axlabelsize = kwargs.pop('axlabelsize', 15)
+    linelabels = kwargs.pop('linelabels', ['']*nlines)
+    islgd = kwargs.pop('legend', False)
+    lgdsize = kwargs.pop('lgdtxtsize', 12)
+    stylespecs = kwargs.pop('style', '-')
+    
+    # Plotting routine
+    f, ax = plt.subplots(figsize=figsize)
+    for i in range(nlines):
+        ax.plot(x, lines[i], stylespecs, label=linelabels[i], **kwargs)
+    
+    ax.set_xlabel(xlabel, fontsize=axlabelsize)
+    ax.set_ylabel(ylabel, fontsize=axlabelsize)
+    if islgd == True:
+        ax.legend(fontsize=lgdsize)
+    
+    return f, ax
+    
 def imcomparisonplot(*imgs, **kwargs):
     """
     Plot a list of images to compare. The images have the same dimensions

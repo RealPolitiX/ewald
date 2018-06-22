@@ -5,6 +5,7 @@ from . import utils as u
 import numpy as np
 import pandas as pd
 import itertools as it
+import pasim as ps
 pi = np.pi
 
 # ==================================================
@@ -14,6 +15,7 @@ pi = np.pi
 # 3.  Simulation building blocks
 # 4.  Simulation routines
 # 5.  Basis decomposition
+# 6.  Loss functions
 # ==================================================
 
 # ============== Classes ============== #
@@ -184,7 +186,7 @@ def atomLabels2numbers(labels):
 
 # ============== Simulation building blocks ============== #
 
-KirkTableMat = np.loadtxt(r'E:\Code-archiv\Python\PyNotebooks\TBAT\Simulation\KirklandTable.mat')
+KirkTableMat = np.loadtxt(r'.\KirklandTable.mat')
 def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
 
     L0 = int(3*Z-3)
@@ -413,3 +415,48 @@ def kron2d(mat, axis=0, order=2):
     matkron = np.rollaxis(matkron, axis)
     
     return matkron.squeeze()
+    
+# ============== Loss functions ============== #
+
+def linear_unmix_loss(coeffs, Sexp, Scomps, A):
+    """
+    Loss function for linear unmixing
+    """
+    
+    # coeffs -- coefficients
+    # Sexp -- vectorized experimental difference map
+    # Scomps -- composite matrix made of unmixing bases
+    
+    Smodel = np.dot(A, Scomps)
+    loss = np.sum(Sexp.ravel() - Smodel)**2
+    
+    return loss
+    
+def nonlinear_unmix_loss(coeffs, Sexp, Scomps, A, order=2):
+    """
+    Loss function for nonlinear unmixing
+    """
+    
+    linloss = linear_unmix_loss(coeffs, Sexp, Scomps, A)
+    polydiff = (Sexp.ravel())**order - polycompose(coeffs, Scomps)
+    polyloss = np.sum(polydiff**2)
+    
+    loss = linloss + polyloss
+    
+    return loss
+    
+def simloss(a, diffdata, dispmat, xyzgs, imgoff, mask, atoms, bd):
+    """
+    Loss function for simulated-based optimization
+    """
+    
+    totaldisp = np.dot(dispmat, a).reshape(xyzgs.shape)
+    on_structure = xyzgs + totaldisp
+    
+    imgon = ps.simulate2(atoms, xyzgs, on_structure, mag=1.11, rot=137, beamsize=300e-6, exrat=0.2, \
+                         mosL=2.0, mosR=1.0, beam_direction=-bd, method='rotmosaic', rebin=(2,2))
+    diffsim = 7e-6*(imgon - imgoff)*mask
+    
+    loss = np.linalg.norm(diffdata - diffsim)**2
+    
+    return loss

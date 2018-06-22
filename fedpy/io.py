@@ -115,13 +115,13 @@ def writecif(atoms, coords, filename, text=''):
     
     :Parameters:
         atoms : list
-            Atom list
-        coords : numpy array
-            Atomic coordinates
+            List of atomic symbols.
+        coords : numpy array (2D)
+            Atomic coordinates.
         text : str
-            Text to be added to the beginning of the cif
+            Text to be added to the beginning of the cif.
         filename : str
-            Filename string
+            Namestring for cif to save in.
     """
     
     f = open(filename+'.cif', 'w')
@@ -138,13 +138,13 @@ def writexyz(atoms, coords, iteraxis, filename):
     
     :Parameters:
         atoms : list
-            Atom list of strings
-        coords : numpy array
-            Atomic coordinates
+            List of atomic symbols.
+        coords : numpy array (3D)
+            Collection of atomic coordinates.
         iteraxis : int
-            Axis to iterate
+            Axis to iterate over in the coords array, choose from 0, 1 or 2.
         filename : str
-            Filename string
+            Namestring for xyz file to save in.
     """
     
     f = open(filename+'.xyz', 'w')

@@ -2,8 +2,7 @@
 numpy
 pandas
 matplotlib
-sphinx
-sphinx_rtd_theme
+numba
 nose
 coverage
 pypi-publisher

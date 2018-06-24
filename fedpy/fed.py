@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 import numba as nb
 import itertools as it
-import pasim as ps
+import scipy.ndimage.filters as spfilters
 pi = np.pi
+fwhm2sigma = 2*np.sqrt(2*np.log(2))
 
 # ==================================================
 # Sections:
@@ -119,9 +120,26 @@ class TriclinicCrystal(object):
                 gamma = {} deg".format(self.a, self.b, self.c,\
                 self.alpha, self.beta, self.gamma))
 
+    def xyz2uvw(self, xyz):
+
+        xyzT = np.transpose(xyz)
+        uvwT = np.dot(self.T_xyz2uvw,xyzT)
+        uvw = np.transpose(uvwT)
+
+        return uvw
+
+    def uvw2xyz(self, uvw):
+
+        uvwT = np.transpose(uvw)
+        xyzT = np.dot(self.T_uvw2xyz,uvwT)
+        xyz = np.transpose(xyzT)
+
+        return xyz
+
 
 # ============== Conversions ============== #
 
+#@nb.njit("float64(float64)")
 def voltage2wavelength(voltage):
     """C onvert acceleration voltage of the electron
     to its de Broglie wavelength (in Angstrom)
@@ -137,7 +155,7 @@ def voltage2wavelength(voltage):
 
     return eWavelength
 
-def frac2cart(xyzFrac,axes):
+def frac2cart(xyzFrac, axes):
     """
     Conversion from fractional to Cartesian coordinates
     """
@@ -146,13 +164,13 @@ def frac2cart(xyzFrac,axes):
 
     return xyzCart
 
-def hkl2cart(hkl,axesRecip):
+def hkl2cart(hkl, axesRecip):
 
     xyzCart = np.dot(hkl,axesRecip)
 
     return xyzCart
 
-def cart2frac(xyzCart,cellAxes):
+def cart2frac(xyzCart, cellAxes):
     """
     Conversion from Cartesian to fractional coordinates
     """
@@ -188,7 +206,7 @@ def atomLabels2numbers(labels):
 # ============== Simulation building blocks ============== #
 
 KirkTableMat = np.loadtxt(r'.\KirklandTable.mat')
-def calcAtomicF(Z,modQ):  # modQ = s/(2*pi)
+def calcAtomicF(Z, modQ):  # modQ = s/(2*pi)
 
     L0 = int(3*Z-3)
     A = np.array([KirkTableMat[L0,0],KirkTableMat[L0,2],KirkTableMat[L0+1,0]]).reshape(1,3)
@@ -238,7 +256,7 @@ def npcalcStructureFactors(HKL, AtomicF, XYZ, form="complete"):
         SF[ind] = np.sum(AtomicF[ind,:]*PhaseMatrix[ind,:])
 
     return SF
-    
+
 @nb.njit("complex128[:](float64[:,:], float64[:,:], float64[:,:], int64)")
 def nbcalcStructureFactors(HKL, AtomicF, XYZ, form=2):
     """
@@ -258,17 +276,17 @@ def nbcalcStructureFactors(HKL, AtomicF, XYZ, form=2):
         F : 1D array (n elements)
             Complex-valued structure factor for all index triplets
     """
-    
+
     nHKL, _ = HKL.shape
     HKLdotXYZ = np.dot(HKL, XYZ.T) # n x m array
-    
+
     if form == 0: # Cosine
         PhaseMatrix = np.cos(2*pi*HKLdotXYZ) + 0j
     elif form == 1: # Sine
         PhaseMatrix = 1j*np.sin(2*pi*HKLdotXYZ)
     elif form == 2: # Complete
         PhaseMatrix = np.cos(2*pi*HKLdotXYZ) + 1j*np.sin(2*pi*HKLdotXYZ)
-    
+
     # Calculate the structure factor (SF)
     SF = np.zeros((nHKL,), dtype=np.complex128)
     for ind in nb.prange(nHKL):
@@ -305,6 +323,61 @@ def calcScatteringVectorsIMG(Detect,eBeam,rotation):
     #Transform to reference of crystal
     qVectorIMG = np.einsum('ijk,kl', q, eBeam.axes)
     #qVectorIMG = np.array([[np.dot(q[i,j,:],eBeam.axes) for i in ranY] for j in ranX])
+
+    return qVectorIMG, modQ_IMG
+
+@nb.njit
+def calcPhi(dx, dy):
+    """
+    Calculate the arctangent of the complex number in the range [-pi/2, pi/2]
+    """
+
+    if dx == 0:
+        PHI = np.pi*0.5
+        if dy < 0:
+            PHI = -PHI
+    else:
+        PHI = np.arctan(dy/dx)
+        if dx < 0:
+            PHI = PHI+np.pi
+
+    return PHI
+
+@nb.njit
+def calcDeltaK(dx, dy, rotation, wavelen, axes, detdist):
+    """
+    Calculate the theta angle for a given K vector
+    """
+
+    q = np.zeros(3)
+    dR = np.sqrt(dx**2 + dy**2)
+    theta = np.arcsin(dR/detdist)
+    phi = calcPhi(dx, dy) + rotation
+    modK = 1.0/wavelen
+    hsinth = np.sin(0.5*theta)
+    modQ = 2*modK*hsinth
+    q[2] = 2*modQ*hsinth # z-component of q (electron beam is -z direction)
+    qR = 2*modQ*np.cos(0.5*theta) # projection of q on detector
+    q[0] = qR*np.cos(phi) # x-component of q
+    q[1] = qR*np.sin(phi) # y-component of q
+    #Transform to reference of crystal
+    Q = np.dot(q, axes)
+
+    return Q, modQ
+
+def nbcalcScatteringVectorsIMG(Detect,eBeam,rotation):
+    """ Calculate the scattering vector (jit-version)
+    """
+
+    nX, nY = Detect.imgSizeX, Detect.imgSizeY
+    qVectorIMG = np.zeros([nY, nX, 3])
+    modQ_IMG = np.zeros([nY, nX])
+
+    for X in nb.prange(nX):
+        for Y in nb.prange(nY):
+            dx = Detect.pixelSize*(X-Detect.centreX)/Detect.magnification
+            dy = Detect.pixelSize*(Y-Detect.centreY)/Detect.magnification
+            qVectorIMG[Y,X,:], modQ_IMG[Y,X] = calcDeltaK(dx, dy, rotation, eBeam.wavelength, eBeam.axes, Detect.dist)
 
     return qVectorIMG, modQ_IMG
 
@@ -349,13 +422,12 @@ def calcHKLvaluesRequired(qVecIMG,axesReciprocal):
             A = [0,-1]
             hklExtremes[row,:] = cart2frac(qVecIMG[A[Y],A[X],:],axesReciprocal)
             row = row+1
-    print('h,k,l values at corners of detector:\n {}'.format(hklExtremes))
+
     HKLmaxVals = np.zeros(3)
     HKLminVals = np.zeros(3)
     HKLmaxVals = np.round(np.max(hklExtremes,0))+2
     HKLminVals = np.round(np.min(hklExtremes,0))-2
-    print('maximum h,k,l values : {}'.format(HKLmaxVals))
-    print('minimum h,k,l values : {}'.format(HKLminVals))
+
     Hrange = range(int(HKLminVals[0]),int(HKLmaxVals[0]))
     Krange = range(int(HKLminVals[1]),int(HKLmaxVals[1]))
     Lrange = range(int(HKLminVals[2]),int(HKLmaxVals[2]))
@@ -380,9 +452,8 @@ def removeUnnecessaryHKLs(HKLvals,eBeam,axesReciprocal,cutoff):
         distFromPlane = abs(np.dot(qHKL[indxH],k0norm))
         if distFromPlane < cutoff*eBeam.modK:
             HKLminimal.append(HKLvals[indxH])
-    HKL2 = np.array(HKLminimal)
 
-    return HKL2
+    return np.array(HKLminimal)
 
 def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
 
@@ -392,6 +463,69 @@ def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
     Fhkl = calcStructureFactors(hkl, fAtomic_HKL, fractionals)
 
     return Fhkl
+
+def convoluteIMGandBeam(IMG, beamSizeFWHM, detectionProperties):
+    sigma = beamSizeFWHM / (detectionProperties.pixelSize*fwhm2sigma)
+    imgconv = spfilters.gaussian_filter(IMG, sigma)
+    return imgconv
+
+@nb.njit("float64[:](float64[:], float64[:])", parallel=True)
+def nbcross(u, v):
+    # Cross product between two 1D vectors (w = u x v)
+
+    w = np.zeros_like(u)
+    w[0] = u[1]*v[2] - u[2]*v[1]
+    w[1] = u[2]*v[0] - u[0]*v[2]
+    w[2] = u[0]*v[1] - u[1]*v[0]
+
+    return w
+
+@nb.njit("float64[:,:](float64[:,:,:], float64[:,:], complex128[:], float64[:], float64, float64, float64)", parallel=True)
+def calcDiffractionPatternwithMosaicity(qIMG, qHKL, Fhkl, k0, thetaMosaicParallel, thetaMosaicRotational, excitationError):
+    """ Faster version of calcDiffractionPattern_ParallelRotationalMosaic()
+    """
+
+    Ihkl = (Fhkl*np.conj(Fhkl)).real
+    modK = np.linalg.norm(k0)
+    k0norm = k0/modK
+
+    nY, nX, _ = qIMG.shape
+    IMG = np.zeros((nY, nX))
+
+    excite2rd, thetaMosaicRot2rd, thetaMosaicPar2rd = np.array([excitationError, thetaMosaicRotational, thetaMosaicParallel])**2
+    normFactorRadial = 1/excitationError
+
+    for Y in nb.prange(nY):
+
+        for X in nb.prange(nX):
+
+            # Calculate intensities from all hkls at each pixel
+            # Calculate the q vector at every detector pixel position
+            qPixel = qIMG[Y,X,:]
+            modQpix = np.sqrt(qPixel[0]**2 + qPixel[1]**2 + qPixel[2]**2)
+            qPixelNorm = qPixel / modQpix
+            qOrthNorm = nbcross(k0norm, qPixelNorm)
+
+            dQ = qPixel - qHKL # nHKLx3 matrix, dQ vector for each hkl trio
+            mod_dQ = np.sqrt(dQ[:,0]**2 + dQ[:,1]**2 + dQ[:,2]**2) # nHKL array
+
+            # Calculate exponential coefficients for the mosaicity model
+            dQradial2rd = np.abs(np.dot(dQ, qPixelNorm))**2 # nx1 array
+            factorRadial = 0.5*dQradial2rd / excite2rd
+
+            dQrot = np.dot(dQ, qOrthNorm) # nHKLx1 array
+            sigmaRotate2rd = modQpix*modQpix*thetaMosaicRot2rd + excite2rd
+            factorRotate = 0.5*dQrot*dQrot / sigmaRotate2rd
+
+            dQlong2rd = np.dot(dQ, k0norm)**2 # nHKLx1 array
+            sigmaLong2rd = modQpix*modQpix*thetaMosaicPar2rd + excite2rd
+            factorLong = 0.5*dQlong2rd / sigmaLong2rd
+
+            expFactor = np.exp(-factorRadial-factorRotate-factorLong) * Ihkl / np.sqrt(sigmaRotate2rd*sigmaLong2rd)
+            Ixy = (mod_dQ < 0.02*modK)*expFactor # nHKLx1 array
+            IMG[Y, X] = np.sum(Ixy) * normFactorRadial
+
+    return IMG
 
 
 # ============== Simulation routines ============== #

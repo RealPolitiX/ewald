@@ -5,7 +5,9 @@ from . import utils as u
 import numpy as np
 import pandas as pd
 import numba as nb
+import numexpr as ne
 import itertools as it
+from math import exp, sin, atan2
 import scipy.ndimage.filters as spfilters
 pi = np.pi
 fwhm2sigma = 2*np.sqrt(2*np.log(2))
@@ -463,6 +465,42 @@ def calcFhkl(hkl, atomCoords, atomicNos, axesReciprocal):
     Fhkl = calcStructureFactors(hkl, fAtomic_HKL, fractionals)
 
     return Fhkl
+
+def calcHKLTheta(qHKL, kvec, magnification):
+    """
+    Calculate the Debye-Waller factor for the Bragg reflection (hkl).
+    """
+
+    thhkl = np.arctan(np.linalg.norm(magnification*qHKL, axis=1)/np.linalg.norm(kvec))/2
+    DWhkl = np.exp(-B*(np.sin(thhkl)/wavelength)**2)
+
+    return thhkl
+
+def necalcDWFactor(Thhkl, wavelength, B):
+    """
+    Calculate the Debye-Waller factor for the Bragg reflection (hkl).
+    """
+
+    DWhkl = ne.evaluate("exp(-B*(sin(Thhkl)/wavelength)**2)")
+
+    return DWhkl
+
+@nb.njit("float64[:](float64[:,:], float64[:], float64)", parallel=True)
+def nbcalcHKLTheta(qHKL, kvec, magnification):
+    """
+    Calculate the Debye-Waller factor for the Bragg reflection (hkl).
+    """
+
+    nHKL, _ = qHKL.shape
+    thhkl = []
+    knorm = np.linalg.norm(kvec)
+
+    for i in nb.prange(nHKL):
+        qnorm = np.linalg.norm(qHKL[i,:])
+        th = atan2(magnification*qnorm, knorm)/2
+        thhkl.append(th)
+
+    return np.array(thhkl)
 
 def convoluteIMGandBeam(IMG, beamSizeFWHM, detectionProperties):
     sigma = beamSizeFWHM / (detectionProperties.pixelSize*fwhm2sigma)

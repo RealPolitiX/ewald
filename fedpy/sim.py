@@ -4,8 +4,8 @@ import numpy as np
 from . import utils as fu, fed as fed
 
 binning = 4
-imageSizeX = int(640/binning)
-imageSizeY = int(640/binning)
+imageSizeX = int(320/binning)
+imageSizeY = int(320/binning)
 cenX = imageSizeX*0.5-0.51
 cenY = imageSizeY*0.5-0.51
 detDist = 0.5
@@ -25,6 +25,8 @@ def simulate(atomList, XYZs, **kwargs):
     DetectionParameters = fed.Detector(imageSizeX, imageSizeY, cenX, cenY, detDist, pixelSize, magnification)
     rotation = kwargs.pop('rot', 90)
     rotation = rotation*np.pi/180.0
+    B = kwargs.pop('B', 0.04)
+    DW = kwargs.pop('DW', False)
     mosL = kwargs.pop('mosL', 1.0)
     mosR = kwargs.pop('mosR', 3.0)
     mosaicityLong = mosL*np.pi/180.0
@@ -62,6 +64,12 @@ def simulate(atomList, XYZs, **kwargs):
     # Calculate the q vectors for all (hkl)
     qHKL = fed.frac2cart(HKL, unitCell_Brotherton.axesRecip)
 
+    if DW:
+        # Calculate Debye-Waller factor
+        Thhkl = fed.nbcalcHKLTheta(qHKL, eBeam_Brotherton.k0, magnification)
+        DWhkl = fed.necalcDWFactor(Thhkl, wavelength, B)
+        Fhkls *= DWhkl
+
     # Calculate diffraction pattern taken crystalline mosaicity into consideration
     img = fed.calcDiffractionPatternwithMosaicity(qVectors, qHKL, Fhkls, eBeam_Brotherton.k0, \
     mosaicityLong, mosaicityRot, modk*pixelSize/detDist)
@@ -84,6 +92,9 @@ def simulate2(atomList, *XYZs, **kwargs):
     DetectionParameters = fed.Detector(imageSizeX, imageSizeY, cenX, cenY, detDist, pixelSize, magnification)
     rotation = kwargs.pop('rot', 90)
     rotation = rotation*np.pi/180.0
+    Bg = kwargs.pop('Bg', 0.04)
+    Be = kwargs.pop('Be', 0.04)
+    DW = kwargs.pop('DW', False)
     mosL = kwargs.pop('mosL', 1.0)
     mosR = kwargs.pop('mosR', 3.0)
     mosaicityLong = mosL*np.pi/180.0
@@ -115,13 +126,22 @@ def simulate2(atomList, *XYZs, **kwargs):
     # Calculate substituent atomic contributions to all (hkl)
     fAtomic = fed.hkl2fAtomicAllAtoms(atomicNumbers, HKL, unitCell_Brotherton.axesRecip)
 
-    # Calculate the mixed structure factors for all (hkl)
-    Fhkls_GS = fed.nbcalcStructureFactors(HKL, fAtomic, UVW_GS, form=0)
-    Fhkls_ES = fed.nbcalcStructureFactors(HKL, fAtomic, UVW_ES, form=0)
-    Fhkls = (1-excitedRatio)*Fhkls_GS + excitedRatio*Fhkls_ES
-
     # Calculate the q vectors for all (hkl)
     qHKL = fed.frac2cart(HKL, unitCell_Brotherton.axesRecip)
+
+    Fhkls_GS = fed.nbcalcStructureFactors(HKL, fAtomic, UVW_GS, form=0)
+    Fhkls_ES = fed.nbcalcStructureFactors(HKL, fAtomic, UVW_ES, form=0)
+
+    if DW:
+        # Calculate Debye-Waller factor
+        Thhkl = fed.nbcalcHKLTheta(qHKL, eBeam_Brotherton.k0, magnification, wavelength)
+        DWhkl_GS = fed.necalcDWFactor(Thhkl, wavelength, Bg)
+        DWhkl_ES = fed.necalcDWFactor(Thhkl, wavelength, Be)
+        Fhkls_GS *= DWhkl_GS
+        Fhkls_ES *= DWhkl_ES
+
+    # Calculate the mixed structure factors for all (hkl)
+    Fhkls = (1-excitedRatio)*Fhkls_GS + excitedRatio*Fhkls_ES
 
     # Calculate diffraction pattern taken crystalline mosaicity into consideration
     img = fed.calcDiffractionPatternwithMosaicity(qVectors, qHKL, Fhkls, eBeam_Brotherton.k0, \

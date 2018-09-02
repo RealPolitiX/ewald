@@ -49,3 +49,12 @@ def cnr(n, r):
     coef = fac(n) / (fac(r) * fac(n-r))
     
     return int(coef)
+    
+def gram_schmidt(M, axis=1):
+    """ Gram-Schmidt orthonormalization of vectors using QR decomposition
+    """
+    
+    M = np.moveaxis(M, axis, 1)
+    Q, _ = np.linalg.qr(M)
+    
+    return Q
